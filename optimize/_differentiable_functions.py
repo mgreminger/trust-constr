@@ -1,8 +1,7 @@
 import numpy as np
 import scipy.sparse as sps
-from ._numdiff import approx_derivative, group_columns
+from ._numdiff import approx_derivative
 from ._hessian_update_strategy import HessianUpdateStrategy
-from scipy.sparse.linalg import LinearOperator
 
 
 FD_METHODS = ('2-point', '3-point', 'cs')
@@ -160,22 +159,10 @@ class ScalarFunction(object):
             self.H_updated = True
             self.nhev += 1
 
-            if sps.issparse(self.H):
-                def hess_wrapped(x):
-                    self.nhev += 1
-                    return sps.csr_matrix(hess(x, *args))
-                self.H = sps.csr_matrix(self.H)
-
-            elif isinstance(self.H, LinearOperator):
-                def hess_wrapped(x):
-                    self.nhev += 1
-                    return hess(x, *args)
-
-            else:
-                def hess_wrapped(x):
-                    self.nhev += 1
-                    return np.atleast_2d(np.asarray(hess(x, *args)))
-                self.H = np.atleast_2d(np.asarray(self.H))
+            def hess_wrapped(x):
+                self.nhev += 1
+                return np.atleast_2d(np.asarray(hess(x, *args)))
+            self.H = np.atleast_2d(np.asarray(self.H))
 
             def update_hess():
                 self.H = hess_wrapped(self.x)
@@ -311,10 +298,6 @@ class VectorFunction(object):
         if jac in FD_METHODS:
             finite_diff_options["method"] = jac
             finite_diff_options["rel_step"] = finite_diff_rel_step
-            if finite_diff_jac_sparsity is not None:
-                sparsity_groups = group_columns(finite_diff_jac_sparsity)
-                finite_diff_options["sparsity"] = (finite_diff_jac_sparsity,
-                                                   sparsity_groups)
             finite_diff_options["bounds"] = finite_diff_bounds
             self.x_diff = np.copy(self.x)
         if hess in FD_METHODS:
@@ -413,22 +396,10 @@ class VectorFunction(object):
             self.H_updated = True
             self.nhev += 1
 
-            if sps.issparse(self.H):
-                def hess_wrapped(x, v):
-                    self.nhev += 1
-                    return sps.csr_matrix(hess(x, v))
-                self.H = sps.csr_matrix(self.H)
-
-            elif isinstance(self.H, LinearOperator):
-                def hess_wrapped(x, v):
-                    self.nhev += 1
-                    return hess(x, v)
-
-            else:
-                def hess_wrapped(x, v):
-                    self.nhev += 1
-                    return np.atleast_2d(np.asarray(hess(x, v)))
-                self.H = np.atleast_2d(np.asarray(self.H))
+            def hess_wrapped(x, v):
+                self.nhev += 1
+                return np.atleast_2d(np.asarray(hess(x, v)))
+            self.H = np.atleast_2d(np.asarray(self.H))
 
             def update_hess():
                 self.H = hess_wrapped(self.x, self.v)

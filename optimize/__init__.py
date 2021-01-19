@@ -397,33 +397,33 @@ Simple iteration solvers:
 :mod:`Additional information on the nonlinear solvers <scipy.optimize.nonlin>`
 """
 
-from .optimize import *
-from ._minimize import *
-from ._root import *
-from ._root_scalar import *
-from .minpack import *
-from .zeros import *
-from .lbfgsb import fmin_l_bfgs_b, LbfgsInvHessProduct
-from .tnc import fmin_tnc
-from .cobyla import fmin_cobyla
-from .nonlin import *
-from .slsqp import fmin_slsqp
-from ._nnls import nnls
-from ._basinhopping import basinhopping
-from ._linprog import linprog, linprog_verbose_callback
-from ._lsap import linear_sum_assignment
-from ._differentialevolution import differential_evolution
-from ._lsq import least_squares, lsq_linear
-from ._constraints import (NonlinearConstraint,
-                           LinearConstraint,
-                           Bounds)
-from ._hessian_update_strategy import HessianUpdateStrategy, BFGS, SR1
-from ._shgo import shgo
-from ._dual_annealing import dual_annealing
-from ._qap import quadratic_assignment
+# from .optimize import *
+# from ._minimize import *
+# from ._root import *
+# from ._root_scalar import *
+# from .minpack import *
+# from .zeros import *
+# from .lbfgsb import fmin_l_bfgs_b, LbfgsInvHessProduct
+# from .tnc import fmin_tnc
+# from .cobyla import fmin_cobyla
+# from .nonlin import *
+# from .slsqp import fmin_slsqp
+# from ._nnls import nnls
+# from ._basinhopping import basinhopping
+# from ._linprog import linprog, linprog_verbose_callback
+# from ._lsap import linear_sum_assignment
+# from ._differentialevolution import differential_evolution
+# from ._lsq import least_squares, lsq_linear
+# from ._constraints import (NonlinearConstraint,
+#                            LinearConstraint,
+#                            Bounds)
+# from ._hessian_update_strategy import HessianUpdateStrategy, BFGS, SR1
+# from ._shgo import shgo
+# from ._dual_annealing import dual_annealing
+# from ._qap import quadratic_assignment
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+# __all__ = [s for s in dir() if not s.startswith('_')]
 
-from scipy._lib._testutils import PytestTester
-test = PytestTester(__name__)
-del PytestTester
+# from scipy._lib._testutils import PytestTester
+# test = PytestTester(__name__)
+# del PytestTester

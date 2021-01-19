@@ -16,21 +16,21 @@ import numpy as np
 
 
 # unconstrained minimization
-from .optimize import (_minimize_neldermead, _minimize_powell, _minimize_cg,
-                       _minimize_bfgs, _minimize_newtoncg,
-                       _minimize_scalar_brent, _minimize_scalar_bounded,
-                       _minimize_scalar_golden, MemoizeJac)
-from ._trustregion_dogleg import _minimize_dogleg
-from ._trustregion_ncg import _minimize_trust_ncg
-from ._trustregion_krylov import _minimize_trust_krylov
-from ._trustregion_exact import _minimize_trustregion_exact
+# from .optimize import (_minimize_neldermead, _minimize_powell, _minimize_cg,
+#                        _minimize_bfgs, _minimize_newtoncg,
+#                        _minimize_scalar_brent, _minimize_scalar_bounded,
+#                        _minimize_scalar_golden, MemoizeJac)
+# from ._trustregion_dogleg import _minimize_dogleg
+# from ._trustregion_ncg import _minimize_trust_ncg
+# from ._trustregion_krylov import _minimize_trust_krylov
+# from ._trustregion_exact import _minimize_trustregion_exact
 from ._trustregion_constr import _minimize_trustregion_constr
 
 # constrained minimization
-from .lbfgsb import _minimize_lbfgsb
-from .tnc import _minimize_tnc
-from .cobyla import _minimize_cobyla
-from .slsqp import _minimize_slsqp
+# from .lbfgsb import _minimize_lbfgsb
+# from .tnc import _minimize_tnc
+# from .cobyla import _minimize_cobyla
+# from .slsqp import _minimize_slsqp
 from ._constraints import (old_bound_to_new, new_bounds_to_old,
                            old_constraint_to_new, new_constraint_to_old,
                            NonlinearConstraint, LinearConstraint, Bounds)

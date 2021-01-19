@@ -3,11 +3,6 @@ import functools
 import numpy as np
 from numpy.linalg import norm
 
-from scipy.sparse.linalg import LinearOperator
-from ..sparse import issparse, csc_matrix, csr_matrix, coo_matrix, find
-from ._group_columns import group_dense, group_sparse
-
-
 def _adjust_scheme_to_bounds(x0, h, num_steps, scheme, lb, ub):
     """Adjust final difference scheme to the presence of bounds.
 
@@ -191,67 +186,6 @@ def _prepare_bounds(bounds, x0):
         ub = np.resize(ub, x0.shape)
 
     return lb, ub
-
-
-def group_columns(A, order=0):
-    """Group columns of a 2-D matrix for sparse finite differencing [1]_.
-
-    Two columns are in the same group if in each row at least one of them
-    has zero. A greedy sequential algorithm is used to construct groups.
-
-    Parameters
-    ----------
-    A : array_like or sparse matrix, shape (m, n)
-        Matrix of which to group columns.
-    order : int, iterable of int with shape (n,) or None
-        Permutation array which defines the order of columns enumeration.
-        If int or None, a random permutation is used with `order` used as
-        a random seed. Default is 0, that is use a random permutation but
-        guarantee repeatability.
-
-    Returns
-    -------
-    groups : ndarray of int, shape (n,)
-        Contains values from 0 to n_groups-1, where n_groups is the number
-        of found groups. Each value ``groups[i]`` is an index of a group to
-        which ith column assigned. The procedure was helpful only if
-        n_groups is significantly less than n.
-
-    References
-    ----------
-    .. [1] A. Curtis, M. J. D. Powell, and J. Reid, "On the estimation of
-           sparse Jacobian matrices", Journal of the Institute of Mathematics
-           and its Applications, 13 (1974), pp. 117-120.
-    """
-    if issparse(A):
-        A = csc_matrix(A)
-    else:
-        A = np.atleast_2d(A)
-        A = (A != 0).astype(np.int32)
-
-    if A.ndim != 2:
-        raise ValueError("`A` must be 2-dimensional.")
-
-    m, n = A.shape
-
-    if order is None or np.isscalar(order):
-        rng = np.random.RandomState(order)
-        order = rng.permutation(n)
-    else:
-        order = np.asarray(order)
-        if order.shape != (n,):
-            raise ValueError("`order` has incorrect shape.")
-
-    A = A[:, order]
-
-    if issparse(A):
-        groups = group_sparse(m, n, A.indices, A.indptr)
-    else:
-        groups = group_dense(m, n, A)
-
-    groups[order] = groups.copy()
-
-    return groups
 
 
 def approx_derivative(fun, x0, method='3-point', rel_step=None, abs_step=None,
@@ -450,98 +384,35 @@ def approx_derivative(fun, x0, method='3-point', rel_step=None, abs_step=None,
     if np.any((x0 < lb) | (x0 > ub)):
         raise ValueError("`x0` violates bound constraints.")
 
-    if as_linear_operator:
-        if rel_step is None:
-            rel_step = _eps_for_method(x0.dtype, f0.dtype, method)
 
-        return _linear_operator_difference(fun_wrapped, x0,
-                                           f0, rel_step, method)
+    # by default we use rel_step
+    if abs_step is None:
+        h = _compute_absolute_step(rel_step, x0, f0, method)
     else:
-        # by default we use rel_step
-        if abs_step is None:
-            h = _compute_absolute_step(rel_step, x0, f0, method)
-        else:
-            # user specifies an absolute step
-            sign_x0 = (x0 >= 0).astype(float) * 2 - 1
-            h = abs_step
+        # user specifies an absolute step
+        sign_x0 = (x0 >= 0).astype(float) * 2 - 1
+        h = abs_step
 
-            # cannot have a zero step. This might happen if x0 is very large
-            # or small. In which case fall back to relative step.
-            dx = ((x0 + h) - x0)
-            h = np.where(dx == 0,
-                         _eps_for_method(x0.dtype, f0.dtype, method) *
-                         sign_x0 * np.maximum(1.0, np.abs(x0)),
-                         h)
-
-        if method == '2-point':
-            h, use_one_sided = _adjust_scheme_to_bounds(
-                x0, h, 1, '1-sided', lb, ub)
-        elif method == '3-point':
-            h, use_one_sided = _adjust_scheme_to_bounds(
-                x0, h, 1, '2-sided', lb, ub)
-        elif method == 'cs':
-            use_one_sided = False
-
-        if sparsity is None:
-            return _dense_difference(fun_wrapped, x0, f0, h,
-                                     use_one_sided, method)
-        else:
-            if not issparse(sparsity) and len(sparsity) == 2:
-                structure, groups = sparsity
-            else:
-                structure = sparsity
-                groups = group_columns(sparsity)
-
-            if issparse(structure):
-                structure = csc_matrix(structure)
-            else:
-                structure = np.atleast_2d(structure)
-
-            groups = np.atleast_1d(groups)
-            return _sparse_difference(fun_wrapped, x0, f0, h,
-                                      use_one_sided, structure,
-                                      groups, method)
-
-
-def _linear_operator_difference(fun, x0, f0, h, method):
-    m = f0.size
-    n = x0.size
+        # cannot have a zero step. This might happen if x0 is very large
+        # or small. In which case fall back to relative step.
+        dx = ((x0 + h) - x0)
+        h = np.where(dx == 0,
+                        _eps_for_method(x0.dtype, f0.dtype, method) *
+                        sign_x0 * np.maximum(1.0, np.abs(x0)),
+                        h)
 
     if method == '2-point':
-        def matvec(p):
-            if np.array_equal(p, np.zeros_like(p)):
-                return np.zeros(m)
-            dx = h / norm(p)
-            x = x0 + dx*p
-            df = fun(x) - f0
-            return df / dx
-
+        h, use_one_sided = _adjust_scheme_to_bounds(
+            x0, h, 1, '1-sided', lb, ub)
     elif method == '3-point':
-        def matvec(p):
-            if np.array_equal(p, np.zeros_like(p)):
-                return np.zeros(m)
-            dx = 2*h / norm(p)
-            x1 = x0 - (dx/2)*p
-            x2 = x0 + (dx/2)*p
-            f1 = fun(x1)
-            f2 = fun(x2)
-            df = f2 - f1
-            return df / dx
-
+        h, use_one_sided = _adjust_scheme_to_bounds(
+            x0, h, 1, '2-sided', lb, ub)
     elif method == 'cs':
-        def matvec(p):
-            if np.array_equal(p, np.zeros_like(p)):
-                return np.zeros(m)
-            dx = h / norm(p)
-            x = x0 + dx*p*1.j
-            f1 = fun(x)
-            df = f1.imag
-            return df / dx
+        use_one_sided = False
 
-    else:
-        raise RuntimeError("Never be here.")
+    return _dense_difference(fun_wrapped, x0, f0, h,
+                                use_one_sided, method)
 
-    return LinearOperator((m, n), matvec)
 
 
 def _dense_difference(fun, x0, f0, h, use_one_sided, method):
@@ -582,86 +453,6 @@ def _dense_difference(fun, x0, f0, h, use_one_sided, method):
         J_transposed = np.ravel(J_transposed)
 
     return J_transposed.T
-
-
-def _sparse_difference(fun, x0, f0, h, use_one_sided,
-                       structure, groups, method):
-    m = f0.size
-    n = x0.size
-    row_indices = []
-    col_indices = []
-    fractions = []
-
-    n_groups = np.max(groups) + 1
-    for group in range(n_groups):
-        # Perturb variables which are in the same group simultaneously.
-        e = np.equal(group, groups)
-        h_vec = h * e
-        if method == '2-point':
-            x = x0 + h_vec
-            dx = x - x0
-            df = fun(x) - f0
-            # The result is  written to columns which correspond to perturbed
-            # variables.
-            cols, = np.nonzero(e)
-            # Find all non-zero elements in selected columns of Jacobian.
-            i, j, _ = find(structure[:, cols])
-            # Restore column indices in the full array.
-            j = cols[j]
-        elif method == '3-point':
-            # Here we do conceptually the same but separate one-sided
-            # and two-sided schemes.
-            x1 = x0.copy()
-            x2 = x0.copy()
-
-            mask_1 = use_one_sided & e
-            x1[mask_1] += h_vec[mask_1]
-            x2[mask_1] += 2 * h_vec[mask_1]
-
-            mask_2 = ~use_one_sided & e
-            x1[mask_2] -= h_vec[mask_2]
-            x2[mask_2] += h_vec[mask_2]
-
-            dx = np.zeros(n)
-            dx[mask_1] = x2[mask_1] - x0[mask_1]
-            dx[mask_2] = x2[mask_2] - x1[mask_2]
-
-            f1 = fun(x1)
-            f2 = fun(x2)
-
-            cols, = np.nonzero(e)
-            i, j, _ = find(structure[:, cols])
-            j = cols[j]
-
-            mask = use_one_sided[j]
-            df = np.empty(m)
-
-            rows = i[mask]
-            df[rows] = -3 * f0[rows] + 4 * f1[rows] - f2[rows]
-
-            rows = i[~mask]
-            df[rows] = f2[rows] - f1[rows]
-        elif method == 'cs':
-            f1 = fun(x0 + h_vec*1.j)
-            df = f1.imag
-            dx = h_vec
-            cols, = np.nonzero(e)
-            i, j, _ = find(structure[:, cols])
-            j = cols[j]
-        else:
-            raise ValueError("Never be here.")
-
-        # All that's left is to compute the fraction. We store i, j and
-        # fractions as separate arrays and later construct coo_matrix.
-        row_indices.append(i)
-        col_indices.append(j)
-        fractions.append(df[i] / dx[j])
-
-    row_indices = np.hstack(row_indices)
-    col_indices = np.hstack(col_indices)
-    fractions = np.hstack(fractions)
-    J = coo_matrix((fractions, (row_indices, col_indices)), shape=(m, n))
-    return csr_matrix(J)
 
 
 def check_derivative(fun, jac, x0, bounds=(-np.inf, np.inf), args=(),
@@ -726,17 +517,8 @@ def check_derivative(fun, jac, x0, bounds=(-np.inf, np.inf), args=(),
     2.4492935982947064e-16
     """
     J_to_test = jac(x0, *args, **kwargs)
-    if issparse(J_to_test):
-        J_diff = approx_derivative(fun, x0, bounds=bounds, sparsity=J_to_test,
-                                   args=args, kwargs=kwargs)
-        J_to_test = csr_matrix(J_to_test)
-        abs_err = J_to_test - J_diff
-        i, j, abs_err_data = find(abs_err)
-        J_diff_data = np.asarray(J_diff[i, j]).ravel()
-        return np.max(np.abs(abs_err_data) /
-                      np.maximum(1, np.abs(J_diff_data)))
-    else:
-        J_diff = approx_derivative(fun, x0, bounds=bounds,
-                                   args=args, kwargs=kwargs)
-        abs_err = np.abs(J_to_test - J_diff)
-        return np.max(abs_err / np.maximum(1, np.abs(J_diff)))
+
+    J_diff = approx_derivative(fun, x0, bounds=bounds,
+                                args=args, kwargs=kwargs)
+    abs_err = np.abs(J_to_test - J_diff)
+    return np.max(abs_err / np.maximum(1, np.abs(J_diff)))
