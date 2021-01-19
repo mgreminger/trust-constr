@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from scipy.sparse.linalg import LinearOperator
+from ..interface import LinearOperator
 from .._differentiable_functions import VectorFunction
 from .._constraints import (
     NonlinearConstraint, LinearConstraint, PreparedConstraint, strict_bounds)
@@ -20,20 +20,6 @@ TERMINATION_MESSAGES = {
     2: "`xtol` termination condition is satisfied.",
     3: "`callback` function requested termination."
 }
-
-
-class HessianLinearOperator(object):
-    """Build LinearOperator from hessp"""
-    def __init__(self, hessp, n):
-        self.hessp = hessp
-        self.n = n
-
-    def __call__(self, x, *args):
-        def matvec(p):
-            return self.hessp(x, p, *args)
-
-        return LinearOperator((self.n, self.n), matvec=matvec)
-
 
 class LagrangianHessian(object):
     """The Hessian of the Lagrangian as LinearOperator.
@@ -315,10 +301,8 @@ def _minimize_trustregion_constr(fun, x0, args, grad,
     x0 = np.atleast_1d(x0).astype(float)
     n_vars = np.size(x0)
     if hess is None:
-        if callable(hessp):
-            hess = HessianLinearOperator(hessp, n_vars)
-        else:
-            hess = BFGS()
+        hess = BFGS()
+
     if disp and verbose == 0:
         verbose = 1
 
