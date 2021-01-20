@@ -214,9 +214,11 @@ class FullHessianUpdateStrategy(HessianUpdateStrategy):
             by vector p.
         """
         if self.approx_type == 'hess':
-            return self._symv(1, self.B, p)
+            # return self._symv(1, self.B, p)
+            return np.dot(np.tril(self.B.T)+np.triu(self.B, 1), p)
         else:
-            return self._symv(1, self.H, p)
+            # return self._symv(1, self.H, p)
+            return np.dot(np.tril(self.H.T)+np.triu(self.H, 1), p)
 
     def get_matrix(self):
         """Return the current internal matrix.
@@ -307,8 +309,12 @@ class BFGS(FullHessianUpdateStrategy):
         .. [1] Nocedal, Jorge, and Stephen J. Wright. "Numerical optimization"
                Second Edition (2006).
         """
-        self.H = self._syr2(-1.0 / ys, s, Hy, a=self.H)
-        self.H = self._syr((ys+yHy)/ys**2, s, a=self.H)
+        # self.H = self._syr2(-1.0 / ys, s, Hy, a=self.H)
+        # self.H = self._syr((ys+yHy)/ys**2, s, a=self.H)
+
+        self.H = s.dot((-1.0 / ys)*Hy.T) + Hy.dot((-1.0 / ys)*s.T) + self.H
+        self.H = s.dot(((ys+yHy)/ys**2)*s.T) + self.H
+        # self.H = np.tril(self.H.T)+np.triu(self.H, 1) # force H to be symmetric
 
     def _update_hessian(self, ys, Bs, sBs, y):
         """Update the Hessian matrix.
@@ -325,8 +331,11 @@ class BFGS(FullHessianUpdateStrategy):
         .. [1] Nocedal, Jorge, and Stephen J. Wright. "Numerical optimization"
                Second Edition (2006).
         """
-        self.B = self._syr(1.0 / ys, y, a=self.B)
-        self.B = self._syr(-1.0 / sBs, Bs, a=self.B)
+        # self.B = self._syr(1.0 / ys, y, a=self.B)
+        # self.B = self._syr(-1.0 / sBs, Bs, a=self.B)
+
+        self.B = self.B + (1/ys)*np.matmul(y,y.T) + (-1/sBs)*np.matmul(Bs,Bs.T)
+        # self.B = np.tril(self.B.T)+np.triu(self.B, 1) # force B to be symmetric
 
     def _update_implementation(self, delta_x, delta_grad):
         # Auxiliary variables w and z
@@ -424,6 +433,8 @@ class SR1(FullHessianUpdateStrategy):
             return
         # Update matrix
         if self.approx_type == 'hess':
-            self.B = self._syr(1/denominator, z_minus_Mw, a=self.B)
+            # self.B = self._syr(1/denominator, z_minus_Mw, a=self.B)
+            self.B = z_minus_Mw.dot((1/denominator)*z_minus_Mw.T) + self.B
         else:
-            self.H = self._syr(1/denominator, z_minus_Mw, a=self.H)
+            # self.H = self._syr(1/denominator, z_minus_Mw, a=self.H)
+            self.H = z_minus_Mw.dot((1/denominator)*z_minus_Mw.T) + self.H
