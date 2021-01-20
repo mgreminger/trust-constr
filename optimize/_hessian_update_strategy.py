@@ -1,7 +1,6 @@
 """Hessian update strategies for quasi-Newton optimization methods."""
 import numpy as np
 from numpy.linalg import norm
-from scipy.linalg import get_blas_funcs
 from warnings import warn
 
 
@@ -102,10 +101,6 @@ class HessianUpdateStrategy(object):
 class FullHessianUpdateStrategy(HessianUpdateStrategy):
     """Hessian update strategy with full dimensional internal representation.
     """
-    _syr = get_blas_funcs('syr', dtype='d')  # Symmetric rank 1 update
-    _syr2 = get_blas_funcs('syr2', dtype='d')  # Symmetric rank 2 update
-    # Symmetric matrix-vector product
-    _symv = get_blas_funcs('symv', dtype='d')
 
     def __init__(self, init_scale='auto'):
         self.init_scale = init_scale
