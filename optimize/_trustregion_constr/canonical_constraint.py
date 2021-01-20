@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.sparse as sps
+from ..interface import LinearOperator
 
 
 class CanonicalConstraint(object):
@@ -77,7 +77,7 @@ class CanonicalConstraint(object):
         """
         empty_fun = np.empty(0)
         empty_jac = np.empty((0, n))
-        empty_hess = sps.csr_matrix((n, n))
+        empty_hess = np.zeros((n,n))
 
         def fun(x):
             return empty_fun, empty_fun
@@ -107,10 +107,7 @@ class CanonicalConstraint(object):
 
             return np.hstack(eq_all), np.hstack(ineq_all)
 
-        if sparse_jacobian:
-            vstack = sps.vstack
-        else:
-            vstack = np.vstack
+        vstack = np.vstack
 
         def jac(x):
             if canonical_constraints:
@@ -139,7 +136,7 @@ class CanonicalConstraint(object):
                 return result
 
             n = x.shape[0]
-            return sps.linalg.LinearOperator((n, n), matvec, dtype=float)
+            return LinearOperator((n, n), matvec, dtype=float)
 
         n_eq = sum(c.n_eq for c in canonical_constraints)
         n_ineq = sum(c.n_ineq for c in canonical_constraints)
@@ -157,10 +154,7 @@ class CanonicalConstraint(object):
         n_ineq = 0
         keep_feasible = np.empty(0, dtype=bool)
 
-        if cfun.sparse_jacobian:
-            empty_jac = sps.csr_matrix((0, n))
-        else:
-            empty_jac = np.empty((0, n))
+        empty_jac = np.empty((0, n))
 
         def fun(x):
             return cfun.fun(x) - value, empty_fun
@@ -173,10 +167,8 @@ class CanonicalConstraint(object):
 
         empty_fun = np.empty(0)
         n = cfun.n
-        if cfun.sparse_jacobian:
-            empty_jac = sps.csr_matrix((0, n))
-        else:
-            empty_jac = np.empty((0, n))
+
+        empty_jac = np.empty((0, n))
 
         return cls(n_eq, n_ineq, fun, jac, hess, keep_feasible)
 
@@ -184,10 +176,7 @@ class CanonicalConstraint(object):
     def _less_to_canonical(cls, cfun, ub, keep_feasible):
         empty_fun = np.empty(0)
         n = cfun.n
-        if cfun.sparse_jacobian:
-            empty_jac = sps.csr_matrix((0, n))
-        else:
-            empty_jac = np.empty((0, n))
+        empty_jac = np.empty((0, n))
 
         finite_ub = ub < np.inf
         n_eq = 0
@@ -224,10 +213,8 @@ class CanonicalConstraint(object):
     def _greater_to_canonical(cls, cfun, lb, keep_feasible):
         empty_fun = np.empty(0)
         n = cfun.n
-        if cfun.sparse_jacobian:
-            empty_jac = sps.csr_matrix((0, n))
-        else:
-            empty_jac = np.empty((0, n))
+
+        empty_jac = np.empty((0, n))
 
         finite_lb = lb > -np.inf
         n_eq = 0
@@ -300,10 +287,7 @@ class CanonicalConstraint(object):
             ge = -J[greater]
             il = J[interval]
             ig = -il
-            if sps.issparse(J):
-                ineq = sps.vstack((le, ge, il, ig))
-            else:
-                ineq = np.vstack((le, ge, il, ig))
+            ineq = np.vstack((le, ge, il, ig))
             return eq, ineq
 
         def hess(x, v_eq, v_ineq):
@@ -377,12 +361,8 @@ def initial_constraints_as_canonical(n, prepared_constraints, sparse_jacobian):
     c_eq = np.hstack(c_eq) if c_eq else np.empty(0)
     c_ineq = np.hstack(c_ineq) if c_ineq else np.empty(0)
 
-    if sparse_jacobian:
-        vstack = sps.vstack
-        empty = sps.csr_matrix((0, n))
-    else:
-        vstack = np.vstack
-        empty = np.empty((0, n))
+    vstack = np.vstack
+    empty = np.empty((0, n))
 
     J_eq = vstack(J_eq) if J_eq else empty
     J_ineq = vstack(J_ineq) if J_ineq else empty
