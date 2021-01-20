@@ -5,7 +5,6 @@ import sys
 import operator
 import warnings
 import numpy as np
-from scipy._lib._util import prod
 
 __all__ = ['upcast', 'getdtype', 'isscalarlike', 'isintlike',
            'isshape', 'issequence', 'isdense', 'ismatrix', 'get_sum_dtype']
@@ -15,6 +14,19 @@ supported_dtypes = [np.bool_, np.byte, np.ubyte, np.short, np.ushort, np.intc,
                     np.longdouble, np.csingle, np.cdouble, np.clongdouble]
 
 _upcast_memo = {}
+
+# prod utility function pulled from scipy._lib._util
+def prod(iterable):
+    """
+    Product of a sequence of numbers.
+
+    Faster than np.prod for short lists like array shapes, and does
+    not overflow if using Python integers.
+    """
+    product = 1
+    for x in iterable:
+        product *= x
+    return product
 
 
 def upcast(*args):

@@ -44,8 +44,7 @@ import warnings
 
 import numpy as np
 
-from scipy.sparse import isspmatrix
-from scipy.sparse.sputils import isshape, isintlike, asmatrix, is_pydata_spmatrix
+from .sputils import isshape, isintlike, asmatrix
 
 __all__ = ['LinearOperator', 'aslinearoperator']
 
@@ -802,9 +801,6 @@ def aslinearoperator(A):
         if A.ndim > 2:
             raise ValueError('array must have ndim <= 2')
         A = np.atleast_2d(np.asarray(A))
-        return MatrixLinearOperator(A)
-
-    elif isspmatrix(A) or is_pydata_spmatrix(A):
         return MatrixLinearOperator(A)
 
     else:
