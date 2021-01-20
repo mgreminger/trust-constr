@@ -12,10 +12,9 @@ References
        Second Edition (2006).
 """
 
-import scipy.sparse as sps
 import numpy as np
 from .equality_constrained_sqp import equality_constrained_sqp
-from scipy.sparse.linalg import LinearOperator
+from ..interface import LinearOperator
 
 __all__ = ['tr_interior_point']
 
@@ -142,56 +141,13 @@ class BarrierSubproblem:
         if self.n_ineq == 0:
             return J_eq
         else:
-            if sps.issparse(J_eq) or sps.issparse(J_ineq):
-                # It is expected that J_eq and J_ineq
-                # are already `csr_matrix` because of
-                # the way ``BoxConstraint``, ``NonlinearConstraint``
-                # and ``LinearConstraint`` are defined.
-                J_eq = sps.csr_matrix(J_eq)
-                J_ineq = sps.csr_matrix(J_ineq)
-                return self._assemble_sparse_jacobian(J_eq, J_ineq, s)
-            else:
-                S = np.diag(s)
-                zeros = np.zeros((self.n_eq, self.n_ineq))
-                # Convert to matrix
-                if sps.issparse(J_ineq):
-                    J_ineq = J_ineq.toarray()
-                if sps.issparse(J_eq):
-                    J_eq = J_eq.toarray()
-                # Concatenate matrices
-                return np.block([[J_eq, zeros],
+            S = np.diag(s)
+            zeros = np.zeros((self.n_eq, self.n_ineq))
+
+            # Concatenate matrices
+            return np.block([[J_eq, zeros],
                                  [J_ineq, S]])
 
-    def _assemble_sparse_jacobian(self, J_eq, J_ineq, s):
-        """Assemble sparse Jacobian given its components.
-
-        Given ``J_eq``, ``J_ineq`` and ``s`` returns:
-            jacobian = [ J_eq,     0     ]
-                       [ J_ineq, diag(s) ]
-
-        It is equivalent to:
-            sps.bmat([[ J_eq,   None    ],
-                      [ J_ineq, diag(s) ]], "csr")
-        but significantly more efficient for this
-        given structure.
-        """
-        n_vars, n_ineq, n_eq = self.n_vars, self.n_ineq, self.n_eq
-        J_aux = sps.vstack([J_eq, J_ineq], "csr")
-        indptr, indices, data = J_aux.indptr, J_aux.indices, J_aux.data
-        new_indptr = indptr + np.hstack((np.zeros(n_eq, dtype=int),
-                                         np.arange(n_ineq+1, dtype=int)))
-        size = indices.size+n_ineq
-        new_indices = np.empty(size)
-        new_data = np.empty(size)
-        mask = np.full(size, False, bool)
-        mask[new_indptr[-n_ineq:]-1] = True
-        new_indices[mask] = n_vars+np.arange(n_ineq)
-        new_indices[~mask] = indices
-        new_data[mask] = s
-        new_data[~mask] = data
-        J = sps.csr_matrix((new_data, new_indices, new_indptr),
-                           (n_eq + n_ineq, n_vars + n_ineq))
-        return J
 
     def lagrangian_hessian_x(self, z, v):
         """Returns Lagrangian Hessian (in relation to `x`) -> Hx"""
