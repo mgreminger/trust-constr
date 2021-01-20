@@ -1,6 +1,5 @@
 """Byrd-Omojokun Trust-Region SQP method."""
 
-from scipy.sparse import eye as speye
 from .projections import projections
 from .qp_subproblem import modified_dogleg, projected_cg, box_intersections
 import numpy as np
@@ -11,7 +10,7 @@ __all__ = ['equality_constrained_sqp']
 
 def default_scaling(x):
     n, = np.shape(x)
-    return speye(n)
+    return np.eye(n)
 
 
 def equality_constrained_sqp(fun_and_constr, grad_and_jac, lagr_hess,
