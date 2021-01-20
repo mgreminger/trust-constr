@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.sparse as sps
 from ._numdiff import approx_derivative
 from ._hessian_update_strategy import HessianUpdateStrategy
 
@@ -331,27 +330,11 @@ class VectorFunction(object):
             self.J_updated = True
             self.njev += 1
 
-            if (sparse_jacobian or
-                    sparse_jacobian is None and sps.issparse(self.J)):
-                def jac_wrapped(x):
-                    self.njev += 1
-                    return sps.csr_matrix(jac(x))
-                self.J = sps.csr_matrix(self.J)
-                self.sparse_jacobian = True
-
-            elif sps.issparse(self.J):
-                def jac_wrapped(x):
-                    self.njev += 1
-                    return jac(x).toarray()
-                self.J = self.J.toarray()
-                self.sparse_jacobian = False
-
-            else:
-                def jac_wrapped(x):
-                    self.njev += 1
-                    return np.atleast_2d(jac(x))
-                self.J = np.atleast_2d(self.J)
-                self.sparse_jacobian = False
+            def jac_wrapped(x):
+                self.njev += 1
+                return np.atleast_2d(jac(x))
+            self.J = np.atleast_2d(self.J)
+            self.sparse_jacobian = False
 
             def update_jac():
                 self.J = jac_wrapped(self.x)
@@ -361,32 +344,13 @@ class VectorFunction(object):
                                        **finite_diff_options)
             self.J_updated = True
 
-            if (sparse_jacobian or
-                    sparse_jacobian is None and sps.issparse(self.J)):
-                def update_jac():
-                    self._update_fun()
-                    self.J = sps.csr_matrix(
-                        approx_derivative(fun_wrapped, self.x, f0=self.f,
-                                          **finite_diff_options))
-                self.J = sps.csr_matrix(self.J)
-                self.sparse_jacobian = True
-
-            elif sps.issparse(self.J):
-                def update_jac():
-                    self._update_fun()
-                    self.J = approx_derivative(fun_wrapped, self.x, f0=self.f,
-                                               **finite_diff_options).toarray()
-                self.J = self.J.toarray()
-                self.sparse_jacobian = False
-
-            else:
-                def update_jac():
-                    self._update_fun()
-                    self.J = np.atleast_2d(
-                        approx_derivative(fun_wrapped, self.x, f0=self.f,
-                                          **finite_diff_options))
-                self.J = np.atleast_2d(self.J)
-                self.sparse_jacobian = False
+            def update_jac():
+                self._update_fun()
+                self.J = np.atleast_2d(
+                    approx_derivative(fun_wrapped, self.x, f0=self.f,
+                                        **finite_diff_options))
+            self.J = np.atleast_2d(self.J)
+            self.sparse_jacobian = False
 
         self._update_jac_impl = update_jac
 
@@ -502,16 +466,9 @@ class LinearVectorFunction(object):
     is identically zero and it is returned as a csr matrix.
     """
     def __init__(self, A, x0, sparse_jacobian):
-        if sparse_jacobian or sparse_jacobian is None and sps.issparse(A):
-            self.J = sps.csr_matrix(A)
-            self.sparse_jacobian = True
-        elif sps.issparse(A):
-            self.J = A.toarray()
-            self.sparse_jacobian = False
-        else:
-            # np.asarray makes sure A is ndarray and not matrix
-            self.J = np.atleast_2d(np.asarray(A))
-            self.sparse_jacobian = False
+        # np.asarray makes sure A is ndarray and not matrix
+        self.J = np.atleast_2d(np.asarray(A))
+        self.sparse_jacobian = False
 
         self.m, self.n = self.J.shape
 
@@ -520,7 +477,7 @@ class LinearVectorFunction(object):
         self.f_updated = True
 
         self.v = np.zeros(self.m, dtype=float)
-        self.H = sps.csr_matrix((self.n, self.n))
+        self.H = np.zeros((self.n, self.n))
 
     def _update_x(self, x):
         if not np.array_equal(x, self.x):
@@ -553,10 +510,6 @@ class IdentityVectorFunction(LinearVectorFunction):
     """
     def __init__(self, x0, sparse_jacobian):
         n = len(x0)
-        if sparse_jacobian or sparse_jacobian is None:
-            A = sps.eye(n, format='csr')
-            sparse_jacobian = True
-        else:
-            A = np.eye(n)
-            sparse_jacobian = False
+        A = np.eye(n)
+        sparse_jacobian = False
         super(IdentityVectorFunction, self).__init__(A, x0, sparse_jacobian)
