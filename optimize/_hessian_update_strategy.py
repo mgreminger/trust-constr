@@ -7,7 +7,6 @@ from warnings import warn
 
 __all__ = ['HessianUpdateStrategy', 'BFGS', 'SR1']
 
-
 class HessianUpdateStrategy(object):
     """Interface for implementing Hessian update strategies.
 
@@ -215,10 +214,10 @@ class FullHessianUpdateStrategy(HessianUpdateStrategy):
         """
         if self.approx_type == 'hess':
             # return self._symv(1, self.B, p)
-            return np.dot(np.tril(self.B.T)+np.triu(self.B, 1), p)
+            return self.B@p
         else:
             # return self._symv(1, self.H, p)
-            return np.dot(np.tril(self.H.T)+np.triu(self.H, 1), p)
+            return self.H@p
 
     def get_matrix(self):
         """Return the current internal matrix.
@@ -312,8 +311,8 @@ class BFGS(FullHessianUpdateStrategy):
         # self.H = self._syr2(-1.0 / ys, s, Hy, a=self.H)
         # self.H = self._syr((ys+yHy)/ys**2, s, a=self.H)
 
-        self.H = s.dot((-1.0 / ys)*Hy.T) + Hy.dot((-1.0 / ys)*s.T) + self.H
-        self.H = s.dot(((ys+yHy)/ys**2)*s.T) + self.H
+        self.H = (-1.0 / ys)*(np.outer(s, Hy) + np.outer(Hy, s)) + self.H
+        self.H = ((ys+yHy)/ys**2)*np.outer(s, s) + self.H
         # self.H = np.tril(self.H.T)+np.triu(self.H, 1) # force H to be symmetric
 
     def _update_hessian(self, ys, Bs, sBs, y):
@@ -334,8 +333,8 @@ class BFGS(FullHessianUpdateStrategy):
         # self.B = self._syr(1.0 / ys, y, a=self.B)
         # self.B = self._syr(-1.0 / sBs, Bs, a=self.B)
 
-        self.B = self.B + (1/ys)*np.matmul(y,y.T) + (-1/sBs)*np.matmul(Bs,Bs.T)
-        # self.B = np.tril(self.B.T)+np.triu(self.B, 1) # force B to be symmetric
+        self.B = (1.0/ys)*np.outer(y, y) + self.B
+        self.B = (-1.0/sBs)*np.outer(Bs, Bs) + self.B
 
     def _update_implementation(self, delta_x, delta_grad):
         # Auxiliary variables w and z
@@ -434,7 +433,7 @@ class SR1(FullHessianUpdateStrategy):
         # Update matrix
         if self.approx_type == 'hess':
             # self.B = self._syr(1/denominator, z_minus_Mw, a=self.B)
-            self.B = z_minus_Mw.dot((1/denominator)*z_minus_Mw.T) + self.B
+            self.B = (1/denominator)*np.outer(z_minus_Mw, z_minus_Mw) + self.B
         else:
             # self.H = self._syr(1/denominator, z_minus_Mw, a=self.H)
-            self.H = z_minus_Mw.dot((1/denominator)*z_minus_Mw.T) + self.H
+            self.H = (1/denominator)*np.outer(z_minus_Mw, z_minus_Mw) + self.H
