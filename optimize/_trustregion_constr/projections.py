@@ -1,7 +1,7 @@
 """Basic linear factorizations needed by the solver."""
 
 from scipy.sparse import (bmat, csc_matrix, eye, issparse)
-from scipy.sparse.linalg import LinearOperator
+from ..interface import LinearOperator
 import scipy.linalg
 import scipy.sparse.linalg
 try:
