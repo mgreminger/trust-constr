@@ -1,15 +1,6 @@
 """Basic linear factorizations needed by the solver."""
 
-from scipy.sparse import (bmat, csc_matrix, eye, issparse)
 from ..interface import LinearOperator
-import scipy.linalg
-import scipy.sparse.linalg
-try:
-    from sksparse.cholmod import cholesky_AAt
-    sksparse_available = True
-except ImportError:
-    import warnings
-    sksparse_available = False
 import numpy as np
 from warnings import warn
 
@@ -147,7 +138,7 @@ def svd_factorization_projections(A, m, n, orth_tol, max_refin, tol):
     """Return linear operators for matrix A using ``SVDFactorization`` approach.
     """
     # SVD Factorization
-    U, s, Vt = scipy.linalg.svd(A, full_matrices=False)
+    U, s, Vt = np.linalg.svd(A, full_matrices=False)
 
     # Remove dimensions related with very small singular values
     U = U[:, s > tol]
