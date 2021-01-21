@@ -10,12 +10,12 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mgreminger/trust-constr",
-    packages=['trust_constr'],
+    packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    requires=['numpy>=1.16.5']
+    install_requires=['numpy>=1.16.5']
 )
