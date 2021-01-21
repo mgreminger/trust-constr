@@ -6,7 +6,6 @@ from ._differentiable_functions import (
 from .optimize import OptimizeWarning
 from warnings import warn
 from numpy.testing import suppress_warnings
-from scipy.sparse import issparse
 
 
 def _arr_to_scalar(x):
@@ -367,8 +366,6 @@ def new_constraint_to_old(con, x0):
                  "method.", OptimizeWarning)
 
         A = con.A
-        if issparse(A):
-            A = A.todense()
         fun = lambda x: np.dot(A, x)
         jac = lambda x: A
 
@@ -396,8 +393,6 @@ def new_constraint_to_old(con, x0):
         if jac is not None:
             def j_eq(x):
                 dy = jac(x)
-                if issparse(dy):
-                    dy = dy.todense()
                 dy = np.atleast_2d(dy)
                 return dy[i_eq, :]
             ceq[0]["jac"] = j_eq
@@ -418,8 +413,6 @@ def new_constraint_to_old(con, x0):
             def j_ineq(x):
                 dy = np.zeros((n_bound_below + n_bound_above, len(x0)))
                 dy_all = jac(x)
-                if issparse(dy_all):
-                    dy_all = dy_all.todense()
                 dy_all = np.atleast_2d(dy_all)
                 dy[:n_bound_below, :] = dy_all[i_bound_below]
                 dy[n_bound_below:, :] = -dy_all[i_bound_above]
