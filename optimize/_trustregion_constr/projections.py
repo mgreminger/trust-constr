@@ -39,10 +39,10 @@ def orthogonality(A, g):
     # Compute vector norms
     norm_g = np.linalg.norm(g)
     # Compute Froebnius norm of the matrix A
-    if issparse(A):
-        norm_A = scipy.sparse.linalg.norm(A, ord='fro')
-    else:
+    if A.size != 0:
         norm_A = np.linalg.norm(A, ord='fro')
+    else:
+        norm_A = 0
 
     # Check if norms are zero
     if norm_g == 0 or norm_A == 0:
@@ -92,19 +92,11 @@ def normal_equation_projections(A, m, n, orth_tol, max_refin, tol):
 def augmented_system_projections(A, m, n, orth_tol, max_refin, tol):
     """Return linear operators for matrix A - ``AugmentedSystem``."""
     # Form augmented system
-    K = csc_matrix(bmat([[eye(n), A.T], [A, None]]))
+    if A.size != 0:
+        K = np.bmat([[np.eye(n), A.T], [A, np.zeros(m)]])
+    else:
+        K = np.eye(n)
     # LU factorization
-    # TODO: Use a symmetric indefinite factorization
-    #       to solve the system twice as fast (because
-    #       of the symmetry).
-    try:
-        solve = scipy.sparse.linalg.factorized(K)
-    except RuntimeError:
-        warn("Singular Jacobian matrix. Using dense SVD decomposition to "
-             "perform the factorizations.")
-        return svd_factorization_projections(A.toarray(),
-                                             m, n, orth_tol,
-                                             max_refin, tol)
 
     # z = x - A.T inv(A A.T) A x
     # is computed solving the extended system:
@@ -116,7 +108,12 @@ def augmented_system_projections(A, m, n, orth_tol, max_refin, tol):
         v = np.hstack([x, np.zeros(m)])
         # lu_sol = [ z ]
         #          [aux]
-        lu_sol = solve(v)
+        try:
+            lu_sol = np.linalg.solve(K, v)
+        except np.linalg.LinAlgError:
+            warn("Jacobian matrix singular, switching to least squares solve.")
+            lu_sol = np.linalg.lstsq(K, v)
+
         z = lu_sol[:n]
 
         # Iterative refinement to improve roundoff
@@ -130,7 +127,10 @@ def augmented_system_projections(A, m, n, orth_tol, max_refin, tol):
             new_v = v - K.dot(lu_sol)
             # [I A.T] * [delta  z ] = new_v
             # [A  O ]   [delta aux]
-            lu_update = solve(new_v)
+            try:
+                lu_update = np.linalg.solve(K, new_v)
+            except np.linalg.LinAlgError:
+                lu_update = np.linalg.lstsq(K, new_v)
             #  [ z ] += [delta  z ]
             #  [aux]    [delta aux]
             lu_sol += lu_update
@@ -150,7 +150,11 @@ def augmented_system_projections(A, m, n, orth_tol, max_refin, tol):
         v = np.hstack([x, np.zeros(m)])
         # lu_sol = [aux]
         #          [ z ]
-        lu_sol = solve(v)
+        try:
+            lu_sol = np.linalg.solve(K, v)
+        except np.linalg.LinAlgError:
+            warn("Jacobian matrix singular, switching to least squares solve.")
+            lu_sol = np.linalg.lstsq(K, v)
         # return z = inv(A A.T) A x
         return lu_sol[n:m+n]
 
@@ -164,7 +168,13 @@ def augmented_system_projections(A, m, n, orth_tol, max_refin, tol):
         v = np.hstack([np.zeros(n), x])
         # lu_sol = [ z ]
         #          [aux]
-        lu_sol = solve(v)
+        try:
+            lu_sol = np.linalg.solve(K, v)
+        except np.linalg.LinAlgError:
+            warn("Jacobian matrix singular, switching to least squares solve.")
+            lu_sol = np.linalg.lstsq(K, v)
+
+        
         # return z = A.T inv(A A.T) x
         return lu_sol[:n]
 
