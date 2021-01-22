@@ -10,7 +10,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mgreminger/trust-constr",
-    packages=setuptools.find_packages(),
+    packages=['trust_constr', 'trust_constr._trustregion_constr'],
+    
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
