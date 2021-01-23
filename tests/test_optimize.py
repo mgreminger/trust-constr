@@ -273,16 +273,20 @@ class TestOptimizeSimple(CheckOptimize):
             return x - 2
 
         x0 = np.array([10.])
-        sol_0 = optimize.minimize(f, x0)
-        sol_1 = optimize.minimize(f, x0, constraints=[{'type': 'ineq',
-                                                       'fun': cons}])
-        sol_2 = optimize.minimize(f, x0, bounds=[(5, 10)])
-        sol_3 = optimize.minimize(f, x0,
-                                  constraints=[{'type': 'ineq', 'fun': cons}],
-                                  bounds=[(5, 10)])
-        sol_4 = optimize.minimize(f, x0,
-                                  constraints=[{'type': 'ineq', 'fun': cons}],
-                                  bounds=[(1, 10)])
+        with suppress_warnings() as sup:
+            sup.filter(UserWarning, "delta_grad == 0.*")
+
+            sol_0 = optimize.minimize(f, x0)
+            sol_1 = optimize.minimize(f, x0, constraints=[{'type': 'ineq',
+                                                        'fun': cons}])
+            sol_2 = optimize.minimize(f, x0, bounds=[(5, 10)])
+            sol_3 = optimize.minimize(f, x0,
+                                    constraints=[{'type': 'ineq', 'fun': cons}],
+                                    bounds=[(5, 10)])
+            sol_4 = optimize.minimize(f, x0,
+                                    constraints=[{'type': 'ineq', 'fun': cons}],
+                                    bounds=[(1, 10)])
+
         for sol in [sol_0, sol_1, sol_2, sol_3, sol_4]:
             assert_(sol.success)
         assert_allclose(sol_0.x, 0, atol=1e-7)

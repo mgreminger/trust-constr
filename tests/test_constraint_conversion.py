@@ -6,9 +6,9 @@ import numpy as np
 from numpy.testing import (assert_array_almost_equal,
                            assert_allclose, assert_warns, suppress_warnings)
 import pytest
-from scipy.optimize import (NonlinearConstraint, LinearConstraint,
+from trust_constr import (NonlinearConstraint, LinearConstraint,
                             OptimizeWarning, minimize, BFGS)
-from .test_minimize_constrained import (Maratos, HyperbolicIneq, Rosenbrock,
+from test_minimize_constrained import (Maratos, HyperbolicIneq, Rosenbrock,
                                         IneqRosenbrock, EqIneqRosenbrock,
                                         BoundedRosenbrock, Elec)
 
@@ -63,7 +63,7 @@ class TestNewToOld(object):
         fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2 + (x[2] - 0.75)**2
         x0 = [2, 0, 1]
         coni = []  # only inequality constraints (can use cobyla)
-        methods = ["slsqp", "cobyla", "trust-constr"]
+        methods = ["trust-constr",]
 
         # mixed old and new
         coni.append([{'type': 'ineq', 'fun': lambda x: x[0] - 2 * x[1] + 2},
@@ -82,8 +82,7 @@ class TestNewToOld(object):
                     sup.filter(UserWarning)
                     result = minimize(fun, x0, method=method, constraints=con)
                     funs[method] = result.fun
-            assert_allclose(funs['slsqp'], funs['trust-constr'], rtol=1e-4)
-            assert_allclose(funs['cobyla'], funs['trust-constr'], rtol=1e-4)
+            assert_allclose(funs['trust-constr'], .8, rtol=1e-4)
 
     def test_individual_constraint_objects(self):
         fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2 + (x[2] - 0.75)**2
@@ -91,7 +90,7 @@ class TestNewToOld(object):
 
         cone = []  # with equality constraints (can't use cobyla)
         coni = []  # only inequality constraints (can use cobyla)
-        methods = ["slsqp", "cobyla", "trust-constr"]
+        methods = ["trust-constr",]
 
         # nonstandard data types for constraint equality bounds
         cone.append(NonlinearConstraint(lambda x: x[0] - x[1], 1, 1))
@@ -142,126 +141,31 @@ class TestNewToOld(object):
         cone.append(LinearConstraint([[1, -1, 0], [0, 1, -1]],
                                      [1.21, -np.inf], [1.21, 1.4]))
 
-        for con in coni:
+        # Solutions for SciPy 1.6.0 trust-constr algorithm
+        solutions = [3.672050010240001, 3.672050010240001,
+                     3.672050010240001, 1.1250000102400013,
+                     1.1250000102400013, 4.114869685317061,
+                     3.4616666889075245, 3.7616666954827016]
+        for i, con in enumerate(coni):
             funs = {}
             for method in methods:
                 with suppress_warnings() as sup:
                     sup.filter(UserWarning)
                     result = minimize(fun, x0, method=method, constraints=con)
                     funs[method] = result.fun
-            assert_allclose(funs['slsqp'], funs['trust-constr'], rtol=1e-3)
-            assert_allclose(funs['cobyla'], funs['trust-constr'], rtol=1e-3)
+            assert_allclose(funs['trust-constr'], solutions[i], rtol=1e-3)
 
-        for con in cone:
+        # Solutions from SciPy 1.6.0 trust-constr algorithm
+        solutions = [3.125000000000001, 3.67205, 3.67205,
+                     4.114866666666668, 4.345399999999999,
+                     4.114866666666668, 3.67205, 3.67205,
+                     3.672050000000001, 4.114866666666666,
+                     3.6720500000000005]
+        for i, con in enumerate(cone):
             funs = {}
             for method in methods[::2]:  # skip cobyla
                 with suppress_warnings() as sup:
                     sup.filter(UserWarning)
                     result = minimize(fun, x0, method=method, constraints=con)
                     funs[method] = result.fun
-            assert_allclose(funs['slsqp'], funs['trust-constr'], rtol=1e-3)
-
-
-class TestNewToOldSLSQP(object):
-    method = 'slsqp'
-    elec = Elec(n_electrons=2)
-    elec.x_opt = np.array([-0.58438468, 0.58438466, 0.73597047,
-                           -0.73597044, 0.34180668, -0.34180667])
-    brock = BoundedRosenbrock()
-    brock.x_opt = [0, 0]
-    list_of_problems = [Maratos(),
-                        HyperbolicIneq(),
-                        Rosenbrock(),
-                        IneqRosenbrock(),
-                        EqIneqRosenbrock(),
-                        elec,
-                        brock
-                        ]
-
-    def test_list_of_problems(self):
-
-        for prob in self.list_of_problems:
-
-            with suppress_warnings() as sup:
-                sup.filter(UserWarning)
-                result = minimize(prob.fun, prob.x0,
-                                  method=self.method,
-                                  bounds=prob.bounds,
-                                  constraints=prob.constr)
-
-            assert_array_almost_equal(result.x, prob.x_opt, decimal=3)
-
-    def test_warn_mixed_constraints(self):
-        # warns about inefficiency of mixed equality/inequality constraints
-        fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2 + (x[2] - 0.75)**2
-        cons = NonlinearConstraint(lambda x: [x[0]**2 - x[1], x[1] - x[2]],
-                                   [1.1, .8], [1.1, 1.4])
-        bnds = ((0, None), (0, None), (0, None))
-        with suppress_warnings() as sup:
-            sup.filter(UserWarning, "delta_grad == 0.0")
-            assert_warns(OptimizeWarning, minimize, fun, (2, 0, 1),
-                         method=self.method, bounds=bnds, constraints=cons)
-
-    def test_warn_ignored_options(self):
-        # warns about constraint options being ignored
-        fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2 + (x[2] - 0.75)**2
-        x0 = (2, 0, 1)
-
-        if self.method == "slsqp":
-            bnds = ((0, None), (0, None), (0, None))
-        else:
-            bnds = None
-
-        cons = NonlinearConstraint(lambda x: x[0], 2, np.inf)
-        res = minimize(fun, x0, method=self.method,
-                       bounds=bnds, constraints=cons)
-        # no warnings without constraint options
-        assert_allclose(res.fun, 1)
-
-        cons = LinearConstraint([1, 0, 0], 2, np.inf)
-        res = minimize(fun, x0, method=self.method,
-                       bounds=bnds, constraints=cons)
-        # no warnings without constraint options
-        assert_allclose(res.fun, 1)
-
-        cons = []
-        cons.append(NonlinearConstraint(lambda x: x[0]**2, 2, np.inf,
-                                        keep_feasible=True))
-        cons.append(NonlinearConstraint(lambda x: x[0]**2, 2, np.inf,
-                                        hess=BFGS()))
-        cons.append(NonlinearConstraint(lambda x: x[0]**2, 2, np.inf,
-                                        finite_diff_jac_sparsity=42))
-        cons.append(NonlinearConstraint(lambda x: x[0]**2, 2, np.inf,
-                                        finite_diff_rel_step=42))
-        cons.append(LinearConstraint([1, 0, 0], 2, np.inf,
-                                     keep_feasible=True))
-        for con in cons:
-            assert_warns(OptimizeWarning, minimize, fun, x0,
-                         method=self.method, bounds=bnds, constraints=cons)
-
-
-class TestNewToOldCobyla(object):
-    method = 'cobyla'
-
-    list_of_problems = [
-                        Elec(n_electrons=2),
-                        Elec(n_electrons=4),
-                        ]
-
-    @pytest.mark.slow
-    def test_list_of_problems(self):
-
-        for prob in self.list_of_problems:
-
-            with suppress_warnings() as sup:
-                sup.filter(UserWarning)
-                truth = minimize(prob.fun, prob.x0,
-                                 method='trust-constr',
-                                 bounds=prob.bounds,
-                                 constraints=prob.constr)
-                result = minimize(prob.fun, prob.x0,
-                                  method=self.method,
-                                  bounds=prob.bounds,
-                                  constraints=prob.constr)
-
-            assert_allclose(result.fun, truth.fun, rtol=1e-3)
+            assert_allclose(funs['trust-constr'], solutions[i], rtol=1e-5)
