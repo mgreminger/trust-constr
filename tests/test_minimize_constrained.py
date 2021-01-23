@@ -655,7 +655,7 @@ class TestEmptyConstraint(TestCase):
           bounds=bounds
         )
 
-        # Note that the SciPy version of trust-constr can achieve decimal=4
+        # Note that the SciPy 1.6.0 version of trust-constr can achieve decimal=4
         # Likely due to differences in factorization method
         # This version does not support the NormalEquation or QRFactorization methods
         assert_array_almost_equal(abs(result.x), np.array([1, 0]), decimal=2)
