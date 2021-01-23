@@ -1,4 +1,4 @@
-from scipy.optimize import minimize, Bounds
+from trust_constr import minimize, Bounds
 
 def test_gh10880():
     # checks that verbose reporting works with trust-constr
