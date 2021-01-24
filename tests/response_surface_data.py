@@ -1,5 +1,5 @@
 # baseline pareto data and iteration count obtained using SciPy version 1.5.0
-# with the trust-constr algorithm and all other optoins set to their defaults
+# with the trust-constr algorithm and all other options set to their defaults
 
 bottle_data_set = {
     "inputs": [
