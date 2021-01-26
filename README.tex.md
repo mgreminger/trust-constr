@@ -2,6 +2,10 @@
 
 trust-constr optimization algorithm from the SciPy project that was originally implemented by [Antonio Horta Ribeiro](https://github.com/antonior92). This is a version of the trust-constr algorithm that does not depend on the rest of SciPy. The only dependency is NumPy. The goal is to have a version of the trust-constr algorithm that can run within the Pyodide environment.
 
+# Installation
+
+`pip install trust-constr`
+
 # Examples Using trust-constr
 
 Since the trust-constr algorithm was extracted from the `scipy.optimize` library, it uses the [same interface](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize) as `scipy.optimize.minimize`. The main different is that everything is imported from `trust_constr` rather than from `scipy.optimize`. The other difference is that the only optimization method available is 'trust-const'. The examples below show how to use trust-constr with a variety of different types of constraints.

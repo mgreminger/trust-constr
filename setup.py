@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="trust-constr",
-    version="0.0.1",
+    version="1.0.0",
     description="trust-constr optimization algorithm from the SciPy project.",
     long_description=long_description,
     long_description_content_type="text/markdown",

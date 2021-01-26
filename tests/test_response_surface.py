@@ -68,17 +68,17 @@ def evaluate_response_surface_grad(
 
 
 @pytest.mark.parametrize(
-    "data,factorization_method,rtol",
+    "data,factorization_method,rtol,iter_buffer",
     [
-        (bottle_data_set, "SVDFactorization", 1e-5),
-        (bottle_data_set, "AugmentedSystem", 1e-5),
-        (panel_data_set, "SVDFactorization", 1e-5),
-        (panel_data_set, "AugmentedSystem", 1e-5),
-        (brake_data_set, "SVDFactorization", 2e-4),
-        (brake_data_set, "AugmentedSystem", 2e-4),
+        (bottle_data_set, "SVDFactorization", 1e-5, 10),
+        (bottle_data_set, "AugmentedSystem", 1e-5, 10),
+        (panel_data_set, "SVDFactorization", 1e-5, 40), # 10->40 NumPy 1.19.2 -> 1.19.5
+        (panel_data_set, "AugmentedSystem", 1e-5, 20),  # 10->20 NumPy 1.19.2 -> 1.19.5
+        (brake_data_set, "SVDFactorization", 2e-4, 10),
+        (brake_data_set, "AugmentedSystem", 2e-4, 10), 
     ],
 )
-def test_generate_pareto_data(data, factorization_method, rtol):
+def test_generate_pareto_data(data, factorization_method, rtol, iter_buffer):
     inputs = np.array(data["inputs"])
     outputs = np.array(data["outputs"])
     y_axis_index = data["y_axis_index"]
@@ -213,7 +213,7 @@ def test_generate_pareto_data(data, factorization_method, rtol):
 
     pareto_output_values = np.array(pareto_output_values)
 
-    assert total_iterations < baseline_total_iterations + 10
+    assert total_iterations < baseline_total_iterations + iter_buffer
     assert_allclose(pareto_output_values, baseline_pareto_points, rtol=rtol)
 
 
