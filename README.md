@@ -16,13 +16,13 @@ from trust_constr import minimize, NonlinearConstraint, LinearConstraint, Bounds
 Example 15.1 from [1]
 
 Solve:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/28fdfb7a1d96af9198fc716e27c095ae.svg?invert_in_darkmode" align=middle width=276.69084134999997pt height=42.80407395pt/></p>
+<p align="center"><img src="svgs/28fdfb7a1d96af9198fc716e27c095ae.svg?invert_in_darkmode" align=middle width=276.69084134999997pt height=42.80407395pt/></p>
 Subject to:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/fdf4422614269144ef7f80731ca33e4a.svg?invert_in_darkmode" align=middle width=159.27210584999997pt height=32.990165999999995pt/></p>
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
+<p align="center"><img src="svgs/fdf4422614269144ef7f80731ca33e4a.svg?invert_in_darkmode" align=middle width=159.27210584999997pt height=32.990165999999995pt/></p>
+<p align="center"><img src="svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
+<p align="center"><img src="svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
 
-Solution: <p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/babd0d08a2217bc8ce1f60222e098e93.svg?invert_in_darkmode" align=middle width=155.03058119999997pt height=16.438356pt/></p>
+Solution: <p align="center"><img src="svgs/babd0d08a2217bc8ce1f60222e098e93.svg?invert_in_darkmode" align=middle width=155.03058119999997pt height=16.438356pt/></p>
 
 
 First solve without defining gradient (finite difference gradient will be used):
@@ -109,14 +109,14 @@ Example 15.2 from [1]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/2fee2fcbc6493f2dfed3044b1532bbbe.svg?invert_in_darkmode" align=middle width=82.19939475pt height=26.303252249999996pt/></p>
+<p align="center"><img src="svgs/2fee2fcbc6493f2dfed3044b1532bbbe.svg?invert_in_darkmode" align=middle width=82.19939475pt height=26.303252249999996pt/></p>
 
 Subject to:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/3bedd9434e5c8c145c46787c6cd9af74.svg?invert_in_darkmode" align=middle width=124.1169798pt height=18.312383099999998pt/></p>
+<p align="center"><img src="svgs/3bedd9434e5c8c145c46787c6cd9af74.svg?invert_in_darkmode" align=middle width=124.1169798pt height=18.312383099999998pt/></p>
 
 Solution:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/6e7b6b6a241ed9fb63a931886262f6a4.svg?invert_in_darkmode" align=middle width=96.58287705pt height=16.438356pt/></p>
+<p align="center"><img src="svgs/6e7b6b6a241ed9fb63a931886262f6a4.svg?invert_in_darkmode" align=middle width=96.58287705pt height=16.438356pt/></p>
 
 
 
@@ -148,16 +148,16 @@ Example problem from [2]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/224a59c0b33c11009e0b5de29effd0e4.svg?invert_in_darkmode" align=middle width=202.6216566pt height=29.654885699999998pt/></p>
+<p align="center"><img src="svgs/224a59c0b33c11009e0b5de29effd0e4.svg?invert_in_darkmode" align=middle width=202.6216566pt height=29.654885699999998pt/></p>
 
 Subject to:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/278cd1acde20484153c1e2b358a714e0.svg?invert_in_darkmode" align=middle width=76.49143425pt height=13.789957499999998pt/></p>
+<p align="center"><img src="svgs/278cd1acde20484153c1e2b358a714e0.svg?invert_in_darkmode" align=middle width=76.49143425pt height=13.789957499999998pt/></p>
 
 
 Solution:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/313de0b35c1215a65b80c1a3a53e9d32.svg?invert_in_darkmode" align=middle width=171.4689999pt height=16.438356pt/></p>
+<p align="center"><img src="svgs/313de0b35c1215a65b80c1a3a53e9d32.svg?invert_in_darkmode" align=middle width=171.4689999pt height=16.438356pt/></p>
 
 
 ```python
@@ -187,11 +187,11 @@ Example problem from [3]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/68eac75e5d74e3f0cbaf01f89339a552.svg?invert_in_darkmode" align=middle width=308.680977pt height=49.9887465pt/></p>
+<p align="center"><img src="svgs/68eac75e5d74e3f0cbaf01f89339a552.svg?invert_in_darkmode" align=middle width=308.680977pt height=49.9887465pt/></p>
 
-Solution for <img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/9aad22a1f10eb2f672ffc52c46eac498.svg?invert_in_darkmode" align=middle width=45.13680929999999pt height=22.465723500000017pt/>:
+Solution for <img src="svgs/9aad22a1f10eb2f672ffc52c46eac498.svg?invert_in_darkmode" align=middle width=45.13680929999999pt height=22.465723500000017pt/>:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/2320eb38cb2a4f6c8ab1fe49826b4749.svg?invert_in_darkmode" align=middle width=83.9495745pt height=16.438356pt/></p>
+<p align="center"><img src="svgs/2320eb38cb2a4f6c8ab1fe49826b4749.svg?invert_in_darkmode" align=middle width=83.9495745pt height=16.438356pt/></p>
 
 
 
