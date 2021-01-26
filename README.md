@@ -12,7 +12,7 @@ import numpy as np
 from trust_constr import minimize, NonlinearConstraint, LinearConstraint, Bounds, check_grad
 ```
 
-## Example 1: Nonlinear Inequality Constraint
+## Example 1: Nonlinear Inequality Constraint with Variable Bounds
 Example 15.1 from [1]
 
 Solve:
@@ -20,7 +20,7 @@ Solve:
 Subject to:
 <p align="center"><img src="svgs/fdf4422614269144ef7f80731ca33e4a.svg?invert_in_darkmode" align=middle width=159.27210584999997pt height=32.990165999999995pt/></p>
 <p align="center"><img src="svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
-<p align="center"><img src="svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
+<p align="center"><img src="svgs/224ba9af64deada0cfd312a4fea665df.svg?invert_in_darkmode" align=middle width=38.78604675pt height=13.789957499999998pt/></p>
 
 Solution: <p align="center"><img src="svgs/babd0d08a2217bc8ce1f60222e098e93.svg?invert_in_darkmode" align=middle width=155.03058119999997pt height=16.438356pt/></p>
 

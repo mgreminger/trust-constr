@@ -12,7 +12,7 @@ import numpy as np
 from trust_constr import minimize, NonlinearConstraint, LinearConstraint, Bounds, check_grad
 ```
 
-## Example 1: Nonlinear Inequality Constraint
+## Example 1: Nonlinear Inequality Constraint with Variable Bounds
 Example 15.1 from [1]
 
 Solve:
@@ -20,7 +20,7 @@ $$\min_{x,y} f(x,y)=\frac{1}{2}(x-2)^2+\frac{1}{2}\left(y-\frac{1}{2}\right)^2$$
 Subject to:
 $$(x+1)^{-1}-y-\frac{1}{4}\ge0$$
 $$x\ge0$$
-$$x\ge0$$
+$$y\ge0$$
 
 Solution: $$(x,y) = (1.953, 0.089)$$
 
