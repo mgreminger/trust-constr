@@ -16,13 +16,13 @@ from trust_constr import minimize, NonlinearConstraint, LinearConstraint, Bounds
 Example 15.1 from [1]
 
 Solve:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/28fdfb7a1d96af9198fc716e27c095ae.svg?invert_in_darkmode" align=middle width=276.69084134999997pt height=42.80407395pt/></p>
+$$\min_{x,y} f(x,y)=\frac{1}{2}(x-2)^2+\frac{1}{2}\left(y-\frac{1}{2}\right)^2$$
 Subject to:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/fdf4422614269144ef7f80731ca33e4a.svg?invert_in_darkmode" align=middle width=159.27210584999997pt height=32.990165999999995pt/></p>
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/565e576a78a7b581fe3c9ecf27b229d3.svg?invert_in_darkmode" align=middle width=39.5318286pt height=12.82874835pt/></p>
+$$(x+1)^{-1}-y-\frac{1}{4}\ge0$$
+$$x\ge0$$
+$$x\ge0$$
 
-Solution: <p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/babd0d08a2217bc8ce1f60222e098e93.svg?invert_in_darkmode" align=middle width=155.03058119999997pt height=16.438356pt/></p>
+Solution: $$(x,y) = (1.953, 0.089)$$
 
 
 First solve without defining gradient (finite difference gradient will be used):
@@ -109,14 +109,14 @@ Example 15.2 from [1]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/2fee2fcbc6493f2dfed3044b1532bbbe.svg?invert_in_darkmode" align=middle width=82.19939475pt height=26.303252249999996pt/></p>
+$$\min_{x,y} x^2+y^2$$
 
 Subject to:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/3bedd9434e5c8c145c46787c6cd9af74.svg?invert_in_darkmode" align=middle width=124.1169798pt height=18.312383099999998pt/></p>
+$$(x-1)^3 - y^2 = 0$$
 
 Solution:
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/6e7b6b6a241ed9fb63a931886262f6a4.svg?invert_in_darkmode" align=middle width=96.58287705pt height=16.438356pt/></p>
+$$(x,y)=(1,0)$$
 
 
 
@@ -148,16 +148,16 @@ Example problem from [2]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/224a59c0b33c11009e0b5de29effd0e4.svg?invert_in_darkmode" align=middle width=202.6216566pt height=29.654885699999998pt/></p>
+$$\min_{x,y} 100\left(y-x^2\right)^2+\left(1-x\right)^2$$
 
 Subject to:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/278cd1acde20484153c1e2b358a714e0.svg?invert_in_darkmode" align=middle width=76.49143425pt height=13.789957499999998pt/></p>
+$$x + 2y \le 1$$
 
 
 Solution:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/313de0b35c1215a65b80c1a3a53e9d32.svg?invert_in_darkmode" align=middle width=171.4689999pt height=16.438356pt/></p>
+$$(x,y)=(0.5022, 0.2489)$$
 
 
 ```python
@@ -187,11 +187,11 @@ Example problem from [3]
 
 Solve:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/68eac75e5d74e3f0cbaf01f89339a552.svg?invert_in_darkmode" align=middle width=308.680977pt height=49.9887465pt/></p>
+$$\min_{\mathbf{x}} \sum^{N/2}_{i=1}\left[100\left(x^2_{2i-1}-x_{2i}\right)^2+\left(x_{2i-1}-1\right)^2\right]$$
 
-Solution for <img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/9aad22a1f10eb2f672ffc52c46eac498.svg?invert_in_darkmode" align=middle width=45.13680929999999pt height=22.465723500000017pt/>:
+Solution for $N=3$:
 
-<p align="center"><img src="https://rawgit.com/mgreminger/trust-constr/master/svgs/2320eb38cb2a4f6c8ab1fe49826b4749.svg?invert_in_darkmode" align=middle width=83.9495745pt height=16.438356pt/></p>
+$$\mathbf{x} = (1,1,1)$$
 
 
 
